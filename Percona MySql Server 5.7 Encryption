@@ -2,3 +2,50 @@ Configuration, my.cnf
   Plugin Load
     early-plugin-load=keyring_file.so
     plugin-load=keyring_udf.so
+  
+  Binary log & Table Encryption
+    encrypt_binlog=ON
+    innodb_encrypt_tables=ON
+    
+Demo
+  create database mdb;
+  use mdb;
+
+  SELECT PLUGIN_NAME, PLUGIN_STATUS
+       FROM INFORMATION_SCHEMA.PLUGINS
+       WHERE PLUGIN_NAME LIKE 'keyring%';
+       
+  CREATE FUNCTION keyring_key_generate RETURNS INTEGER
+    SONAME 'keyring_udf.so';
+  CREATE FUNCTION keyring_key_fetch RETURNS STRING
+    SONAME 'keyring_udf.so';
+  CREATE FUNCTION keyring_key_length_fetch RETURNS INTEGER
+    SONAME 'keyring_udf.so';
+  CREATE FUNCTION keyring_key_type_fetch RETURNS STRING
+    SONAME 'keyring_udf.so';
+  CREATE FUNCTION keyring_key_store RETURNS INTEGER
+    SONAME 'keyring_udf.so';
+  CREATE FUNCTION keyring_key_remove RETURNS INTEGER
+    SONAME 'keyring_udf.so';
+    
+  Table encryption
+    create table piit(userid int not null auto_increment, ssn varbinary(512), primary key (userid));
+    insert into piit (ssn) values('000-00-0001');
+    select * from piit;
+
+    \! bash
+    cd /opt/sw/dbinstall/percona_data/mdb <-- data_directory/mdb
+    strings piit.ibd
+    exit
+
+  Field Encryption
+    insert into piit (ssn) values('000-00-0002');
+    
+    SELECT keyring_key_generate('k1', 'DSA', 256);
+    SELECT HEX(keyring_key_fetch('k1'));
+    SELECT HEX(keyring_key_fetch('k1')) into @vk1;
+    SELECT RANDOM_BYTES(16) into @vr1;
+
+    insert into piit(ssn) values (AES_ENCRYPT('000-00-0003', SHA2(@vk1, 512), @vr1));
+    select * from piit;
+    select userid, AES_DECRYPT(ssn,SHA2(@vk1, 512), @vr1) from piit;
