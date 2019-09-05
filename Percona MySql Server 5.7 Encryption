@@ -1,4 +1,4 @@
-Configuration, my.cnf
+Configuration, /etc/my.cnf
   Plugin Load
     early-plugin-load=keyring_file.so
     plugin-load=keyring_udf.so
