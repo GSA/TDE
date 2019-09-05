@@ -39,13 +39,11 @@ Demo
     exit
 
   Field Encryption
-    insert into piit (ssn) values('000-00-0002');
-    
     SELECT keyring_key_generate('k1', 'DSA', 256);
     SELECT HEX(keyring_key_fetch('k1'));
     SELECT HEX(keyring_key_fetch('k1')) into @vk1;
     SELECT RANDOM_BYTES(16) into @vr1;
 
-    insert into piit(ssn) values (AES_ENCRYPT('000-00-0003', SHA2(@vk1, 512), @vr1));
+    insert into piit(ssn) values (AES_ENCRYPT('000-00-0002', SHA2(@vk1, 512), @vr1));
     select * from piit;
     select userid, AES_DECRYPT(ssn,SHA2(@vk1, 512), @vr1) from piit;
