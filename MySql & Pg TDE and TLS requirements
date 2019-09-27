@@ -1,0 +1,6 @@
+1. Strategy is to have the SAME cert reside on DMS databases
+2. DO NOT generate a cert per db it will become a nightmare to manage
+3. Have the cert's public part ready and securely stored and managed
+4. GSA has a policy on the ciphers to be used: No 3DES, only use      TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
+5. for protocol, only TLS 1.2 is acceptable
+6. For all internal sites and endpoints - DBs are considered internal endpoints - self signed certs are acceptable
